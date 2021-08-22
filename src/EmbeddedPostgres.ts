@@ -128,7 +128,7 @@ export default class EmbeddedPostgres {
         const process = child_process.spawn(this.postgresPath, args, { shell: false });
 
         function breakLog(data: string): { logLevel: string, message: string }[] {
-            const regex = /^.* (?<logLevel>[A-Z]*): {2}(?<message>.*)$/gm;
+            const regex = /^.* (?<logLevel>[A-Z0-9]*): {2}(?<message>.*)$/gm;
 
             let m: RegExpExecArray | null;
 
@@ -169,11 +169,19 @@ export default class EmbeddedPostgres {
                     for (const log of logs) {
                         // eslint-disable-next-line @typescript-eslint/ban-types
                         const logLevelMaps: { [k: string]: Function } = {
-                            'LOG': childLogger.info,
-                            'HINT': childLogger.info,
+                            'DEBUG5': childLogger.debug,
+                            'DEBUG4': childLogger.debug,
+                            'DEBUG3': childLogger.debug,
+                            'DEBUG2': childLogger.debug,
+                            'DEBUG1': childLogger.debug,
+                            'NOTICE': childLogger.info,
                             'WARNING': childLogger.warn,
-                            'FATAL': childLogger.fatal
+                            'ERROR': childLogger.error,
+                            'LOG': childLogger.info,
+                            'FATAL': childLogger.fatal,
+                            'PANIC': childLogger.fatal
                         };
+
                         logLevelMaps[log.logLevel].apply(childLogger, [log.message]);
                     }
                 } catch (ex) {
