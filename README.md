@@ -7,7 +7,7 @@
 - Start, stop and get status;
 - Initialize;
 - Update `postgresql.conf`;
-- [Documented](./docs/index.html);
+- [Documented](https://conradoqg.github.io/embedded-postgresql/);
 - [Tested](./src/);
 
 ### Install
