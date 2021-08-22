@@ -16,20 +16,20 @@ describe('installer', () => {
 
     test('is expected to throw if the platform is not supported', async () => {
         const spy = jest.spyOn(os, 'platform').mockImplementation(() => 'haiku');
-        await expect(install('13.2.0', testInstallPath)).rejects.toThrow('There is not an embedded-postgres available for');
+        await expect(install('13.2.0', testInstallPath)).rejects.toThrow('There is not an embedded-postgres-binaries available for');
         spy.mockRestore();
     });
 
     test('is expected to throw if the arch is not supported', async () => {
         const spy = jest.spyOn(os, 'arch').mockImplementation(() => 'unknown');
-        await expect(install('13.2.0', testInstallPath)).rejects.toThrow('There is not an embedded-postgres available for');
+        await expect(install('13.2.0', testInstallPath)).rejects.toThrow('There is not an embedded-postgres-binaries available for');
         spy.mockRestore();
     });
 
     test('is expected to throw if the platform and arch combination is not supported', async () => {
         const platformSpy = jest.spyOn(os, 'platform').mockImplementation(() => 'darwin');
         const archSpy = jest.spyOn(os, 'arch').mockImplementation(() => 'x32');
-        await expect(install('13.2.0', testInstallPath)).rejects.toThrow('There is not an embedded-postgres avaliable for the combination of');
+        await expect(install('13.2.0', testInstallPath)).rejects.toThrow('There is not an embedded-postgres-binaries avaliable for the combination of');
         platformSpy.mockRestore();
         archSpy.mockRestore();
     });

@@ -1,0 +1,15 @@
+{
+    "clearMocks": true,
+    "coverageDirectory": "coverage",
+    "collectCoverage": true,
+    "moduleFileExtensions": [
+        "js",
+        "json",
+        "jsx",
+        "ts",
+        "tsx",
+        "node"
+    ],
+    "testEnvironment": "node",
+    "preset": "ts-jest"
+}

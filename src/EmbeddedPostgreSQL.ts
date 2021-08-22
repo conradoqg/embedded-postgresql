@@ -29,7 +29,7 @@ export interface PostgresConfig {
 /**
  * Controls the execution of the installed embedded PostgresSQL, allowing it to start, stop, get status and configure.
  */
-export default class EmbeddedPostgres {
+export default class EmbeddedPostgreSQL {
 
     private installPath: string;
     private configPath: string;
@@ -38,7 +38,7 @@ export default class EmbeddedPostgres {
      */
     dataPath: string;
     /**
-     * PostgreSQL' process, set by {@link EmbeddedPostgres.start}.
+     * PostgreSQL' process, set by {@link EmbeddedPostgreSQL.start}.
      */
     process: ChildProcessWithoutNullStreams | null = null;
 

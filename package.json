@@ -1,4 +1,14 @@
 {
+  "name": "embedded-postgresql",
+  "description": "A npm package that helps installing and managing a standalone PostgreSQL.",
+  "version": "1.0.0",
+  "author": "Conrado Quilles Gomes <conradoqg@gmail.com>",
+  "license": "MIT",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.js",
+  "files": [
+    "/dist"
+  ],
   "devDependencies": {
     "@types/debug": "^4.1.7",
     "@types/decompress": "^4.2.4",
@@ -16,7 +26,10 @@
     "eslint-plugin-import": "^2.24.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.1.0",
+    "husky": "^7.0.1",
+    "is-ci": "^3.0.0",
     "jest": "^27.0.6",
+    "rimraf": "^3.0.2",
     "ts-jest": "^27.0.4",
     "ts-node": "^10.1.0",
     "tslib": "^2.3.0",
@@ -28,41 +41,19 @@
     "decompress-tarxz": "^3.0.0",
     "fs-extra": "^10.0.0",
     "node-fetch": "^2.6.1",
-    "rimraf": "^3.0.2",
     "temp": "^0.9.4",
     "tslog": "^3.2.0",
     "unzipper": "^0.10.11"
   },
-  "name": "embedded-postgres",
-  "description": "",
-  "version": "1.0.0",
-  "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.js",
-  "files": [
-    "/dist"
-  ],
   "scripts": {
-    "build": "rimraf dist docs && tsc && typedoc",
-    "prepare": "npm run build",
-    "start": "node -r ts-node/register ./src/index.ts",
-    "test": "jest ./src",
-    "postinstall": "node ./dist/install.js"
-  },
-  "jest": {
-    "clearMocks": true,
-    "coverageDirectory": "coverage",
-    "collectCoverage": true,
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "jsx",
-      "ts",
-      "tsx",
-      "node"
-    ],
-    "testEnvironment": "node",
-    "preset": "ts-jest"
-  },
-  "author": "Conrado Quilles Gomes <conradoqg@gmail.com>",
-  "license": "ISC"
+    "build": "npm run build:ts && npm run build:doc",
+    "build:ts": "rimraf dist && tsc",
+    "build:doc": "rimraf docs && typedoc",
+    "test": "jest ./src --config jestconfig.json",
+    "lint:fix": "eslint ./src --fix",
+    "lint:check": "eslint ./src",
+    "husky:pre-commit": "npm run lint:check",
+    "prepare": "is-ci || husky install",
+    "prepublishOnly": "npm run build && npm run test"
+  }
 }

@@ -141,8 +141,8 @@ function detectPAR(): EmbeddedPostgresPAR {
     const foundEmbeddedPlatform = (nodeXEmbeddedPostgresPlatformMap.find(mapItem => mapItem.node == localPAR.platform));
     const foundEmbeddedArch = (nodeXEmbeddedPostgresArchMap.find(mapItem => mapItem.node == localPAR.arch));
 
-    if (!foundEmbeddedPlatform) throw new Error(`There is not an embedded-postgres available for the '${localPAR.platform}' platform`);
-    if (!foundEmbeddedArch) throw new Error(`There is not an embedded-postgres available for the '${localPAR.arch}' arch`);
+    if (!foundEmbeddedPlatform) throw new Error(`There is not an embedded-postgres-binaries available for the '${localPAR.platform}' platform`);
+    if (!foundEmbeddedArch) throw new Error(`There is not an embedded-postgres-binaries available for the '${localPAR.arch}' arch`);
 
     const candidatePAR = {
         plaform: foundEmbeddedPlatform.embeddedPostgres,
@@ -152,7 +152,7 @@ function detectPAR(): EmbeddedPostgresPAR {
 
     const foundAvailablePar = availablePARs.find(item => item.platform == candidatePAR.plaform && item.arch == candidatePAR.arch && item.release == candidatePAR.release);
 
-    if (!foundAvailablePar) throw new Error(`There is not an embedded-postgres avaliable for the combination of the '${candidatePAR.plaform}' platform, '${candidatePAR.arch}' arch, and '${candidatePAR.release}' release`);
+    if (!foundAvailablePar) throw new Error(`There is not an embedded-postgres-binaries avaliable for the combination of the '${candidatePAR.plaform}' platform, '${candidatePAR.arch}' arch, and '${candidatePAR.release}' release`);
 
     logger.debug('detected PAR:', foundAvailablePar);
 

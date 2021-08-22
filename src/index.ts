@@ -1,4 +1,4 @@
-import EmbeddedPostgres, { PostgresConfig } from './EmbeddedPostgres';
+import EmbeddedPostgreSQL, { PostgresConfig } from './EmbeddedPostgreSQL';
 import { install, uninstall, checkInstallation, defaultInstallPath } from './installer';
 
-export { EmbeddedPostgres, PostgresConfig, install, uninstall, checkInstallation, defaultInstallPath };
+export { EmbeddedPostgreSQL as EmbeddedPostgres, PostgresConfig, install, uninstall, checkInstallation, defaultInstallPath };
