@@ -1,81 +1,128 @@
 /* eslint-disable no-inner-declarations */
-import { install, installPath } from './installer';
+import { defaultInstallPath, checkInstallation } from './installer';
 import fsExtra from 'fs-extra';
 import path from 'path';
 import child_process, { ChildProcessWithoutNullStreams } from 'child_process';
 import logger from './logger';
 
+const isWin = process.platform === 'win32';
+
+/**
+ * Object that holds pairs that is used to update postgresql's configuration file `postgresql.conf`.
+ */
 export interface PostgresConfig {
-    [k: string]: unknown
+    /**
+     * Pair entry.
+     * 
+     * Example:
+     * ```json
+     * {
+     *       listen_addresses: '\'127.0.0.1\'', // By default it's commented and a string 'localhost'
+     *       max_connections: 200,   // By default it's 100
+     *       superuser_reserved_connections: 4 // By default it's commented and a number 3
+     *   }
+     * ```
+     */
+    [k: string]: string | number
 }
 
+/**
+ * Controls the execution of the installed embedded PostgresSQL, allowing it to start, stop, get status and configure.
+ */
 export default class EmbeddedPostgres {
 
-    static async checkInstallation(): Promise<boolean> {
-        if (await fsExtra.pathExists(installPath)) {
-            const installedPAR = await fsExtra.readJSON(path.join(installPath, 'par.json'));
-            logger.info('installed postgres PAR: ', installedPAR);
-            return true;
-        }
-        return false;
-    }
-
-    static async ensureInstallation(version: string): Promise<void> {
-        if (!await this.checkInstallation()) {
-            await install(version);
-        }
-    }
-
-    version: string;
+    private installPath: string;
+    private configPath: string;
+    /**
+     * Set data path.
+     */
     dataPath: string;
-    postgresPath: string;
-    pgCTLPath: string;
-    initDBPath: string;
-    configPath: string;
+    /**
+     * PostgreSQL' process, set by {@link EmbeddedPostgres.start}.
+     */
     process: ChildProcessWithoutNullStreams | null = null;
-    config: PostgresConfig | null;
 
-    constructor(version: string, dataPath: string, config: PostgresConfig | null = null) {
-        const isWin = process.platform === 'win32';
+    private get postgresPath(): string {
+        return path.join(this.installPath, 'bin', 'postgres' + (isWin && '.exe'));
+    }
 
-        this.version = version;
+    private get pgCTLPath(): string {
+        return path.join(this.installPath, 'bin', 'pg_ctl' + (isWin && '.exe'));
+    }
+
+    private get initDBPath(): string {
+        return path.join(this.installPath, 'bin', 'initdb' + (isWin && '.exe'));
+    }
+
+    /**
+     * Creates an embedded PostgreSQL instance for a specific data path.
+     * @param dataPath Data path.
+     */
+    constructor(dataPath: string = path.join(__dirname, '..', 'data')) {
         this.dataPath = dataPath;
-        this.postgresPath = path.join(installPath, 'bin', 'postgres' + (isWin && '.exe'));
-        this.pgCTLPath = path.join(installPath, 'bin', 'pg_ctl' + (isWin && '.exe'));
-        this.initDBPath = path.join(installPath, 'bin', 'initdb' + (isWin && '.exe'));
+        this.installPath = defaultInstallPath;
         this.configPath = path.join(dataPath, 'postgresql.conf');
-        this.config = config;
 
         logger.silly('instance config: ', this);
     }
 
-    async setup(): Promise<void> {
-        await EmbeddedPostgres.ensureInstallation(this.version);
-        if (!await fsExtra.pathExists(this.dataPath))
-            this.init();
-        await this.updateConfig();
+    /**
+     * Checks if the embedded PostgreSQL is installed.
+     * @returns `true` if it is installed, otherwise `false`.
+     */
+    public async isInstalled(): Promise<boolean> {
+        return checkInstallation(this.installPath);
     }
 
-    async init(): Promise<void> {
+    /**
+     * Checks if the data path is initialized.
+     * @returns  `true` if it is initialized, otherwise `false`.
+     */
+    public async isInitialized(): Promise<boolean> {
+        return fsExtra.pathExists(this.dataPath);
+    }
+
+    /**
+     * Initializes the data path with a database cluster.
+     * 
+     * Under the hood it calls postgres's [initdb](https://www.postgresql.org/docs/current/app-initdb.html).
+     */
+    public async initialize(): Promise<void> {
+        if (!await this.isInstalled()) throw new Error('Embedded Postgress in not installed');
+        if (await this.isInitialized()) throw new Error('Already initialized');
+
         const args = ['-A', 'trust', '-U', 'postgres', '-D', this.dataPath, '-E', 'UTF-8'];
         logger.info(`initing postgres using '${this.dataPath}' for data`);
         logger.debug(`calling '${this.initDBPath} ${args.join(' ')}'`);
         child_process.spawnSync(this.initDBPath, args, { shell: false });
     }
 
-    async delete(): Promise<void> {
+    /**
+     * Deletes the data path.
+     */
+    public async delete(): Promise<void> {
+        if (!await this.isInitialized()) throw new Error('Embedded Postgress in not initialized');
+
         logger.debug(`deleting database on '${this.dataPath}'`);
-        await fsExtra.rmdir(this.dataPath);
+        await fsExtra.remove(this.dataPath);
     }
 
-    async start(): Promise<void> {
-        if (await this.status()) await this.stop();
-
-        await this.updateConfig();
+    /**
+     * Starts the embedded PostgreSQL process
+     * 
+     * Under the hood it calls postgres' [server](https://www.postgresql.org/docs/current/app-postgres.html) executable and logs it's output.
+     * @param autoStop `true` if it should stop the local postgres' process if it's running, otherwise if there's already an executing process it will throw.
+     */
+    public async start(autoStop = true): Promise<void> {
+        if (!await this.isInstalled()) throw new Error('Embedded Postgress in not installed');
+        if (await this.status()) {
+            if (autoStop) await this.stop();
+            else throw new Error('Already started');
+        }
 
         const args = ['-D', this.dataPath];
 
-        logger.info(`starting postgres using '${this.dataPath}' for data`);
+        logger.info(`starting postgres using '${this.dataPath} ' for data`);
         logger.debug(`calling '${this.postgresPath} ${args.join(' ')}'`);
 
         const process = child_process.spawn(this.postgresPath, args, { shell: false });
@@ -139,7 +186,13 @@ export default class EmbeddedPostgres {
         });
     }
 
-    async stop(): Promise<void> {
+    /**
+     * Stops the embedded PostgreSQL process.
+     *
+     * Under the hood it calls postgres' [pg_ctrl](https://www.postgresql.org/docs/current/app-pg-ctl.html) stop executable.
+     */
+    public async stop(): Promise<void> {
+        if (!await this.isInstalled()) throw new Error('Embedded Postgress in not installed');
         if (!await this.status()) throw new Error('Cannot stop because it is not running');
         if (this.process == null) throw new Error('Cannot stop because it was not created by me');
 
@@ -156,7 +209,14 @@ export default class EmbeddedPostgres {
         this.process.removeAllListeners();
     }
 
-    async status(): Promise<boolean> {
+    /**
+     * Gets the running status of the embedded PostgreSQL process.
+     * 
+     * Under the hood it calls postgres' [pg_ctrl](https://www.postgresql.org/docs/current/app-pg-ctl.html).
+     * @returns `true` if it's running, otherwise `false`.
+     */
+    public async status(): Promise<boolean> {
+        if (!await this.isInstalled()) throw new Error('Embedded Postgress in not installed');
         const args = ['-D', this.dataPath, 'status'];
 
         logger.info(`getting status of postgres using '${this.dataPath}' for data`);
@@ -166,21 +226,23 @@ export default class EmbeddedPostgres {
         return result.status == 0;
     }
 
-    private async updateConfig(): Promise<void> {
-        if (this.config) {
-            let newPostgresqlConf = await fsExtra.readFile(this.configPath, 'utf-8');
+    /**
+     * Updates the `postgresql.conf` of the data path.
+     * @param config Object with the configuration entries to be updated.     
+     */
+    public async updateConfig(config: PostgresConfig): Promise<void> {
+        let newPostgresqlConf = await fsExtra.readFile(this.configPath, 'utf-8');
 
-            for (const key in this.config) {
-                const regex = new RegExp(`^(?:#?)(${key}) ?= ?([a-zA-Z0-9!"#$%&'()*+,.\\/:;<=>?@\\[\\] ^_]*)(\\W.*)`, 'gm');
-                const subst = `$1 = ${this.config[key]} $3`;
+        for (const key in config) {
+            const regex = new RegExp(`^(?:#?)(${key}) ?= ?([a-zA-Z0-9!"#$%&'()*+,.\\/:;<=>?@\\[\\] ^_]*)(\\W.*)`, 'gm');
+            const subst = `$1 = ${config[key]} $3`;
 
-                newPostgresqlConf = newPostgresqlConf.replace(regex, subst);
-            }
-
-            logger.info(`writing config to '${this.configPath}'`);
-            logger.debug(`writing config to '${this.configPath}'`, this.config);
-
-            return fsExtra.writeFileSync(this.configPath, newPostgresqlConf);
+            newPostgresqlConf = newPostgresqlConf.replace(regex, subst);
         }
+
+        logger.info(`writing config to '${this.configPath}'`);
+        logger.debug(`writing config to '${this.configPath}'`, config);
+
+        return fsExtra.writeFileSync(this.configPath, newPostgresqlConf);
     }
 }

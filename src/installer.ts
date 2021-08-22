@@ -15,10 +15,30 @@ const urlTemplate = (platform: string, arch: string, version: string): string =>
 const jarFileTemplate = (platform: string, arch: string, version: string): string => `embedded-postgres-binaries-${platform}-${arch}-${version}.jar`;
 const txzFileTemplate = (platform: string, arch: string, version: string): string => `embedded-postgres-binaries-${platform}-${arch}-${version}.txz`;
 
-export const installPath = path.join(__dirname, '..', 'postgres');
+/**
+ * The default path installation.
+ */
+export const defaultInstallPath = path.join(__dirname, '..', 'postgres');
 
-// https://github.com/zonkyio/embedded-postgres-binaries#postgres-version
-export async function install(version: string): Promise<string> {
+interface EmbeddedPostgresPAR {
+    platform: string,
+    arch: string,
+    release: string | null
+}
+
+/**
+ * Installs an embedded PostgreSQL on the destination path.
+ * 
+ * The installer utilizes binaries distributed by the [embedded-postgress-binaries](https://github.com/zonkyio/embedded-postgres-binaries) project and the available versions, platforms and archs can be see in this [list](https://mvnrepository.com/artifact/io.zonky.test.postgres).
+ * 
+ * @param version PostgreSQL version.
+ * @param installPath Installation path. Defaults to `path.join(__dirname, '..', 'postgres')`
+ * @returns The path of installation. 
+ * @throws `Already installed`, if there is already an embedded PostgreSQL installed on the destination path.
+ */
+export async function install(version: string, installPath: string = defaultInstallPath): Promise<string> {
+
+    if (await checkInstallation(installPath)) throw new Error('Already installed');
 
     logger.info('installing portable postgres');
 
@@ -26,25 +46,51 @@ export async function install(version: string): Promise<string> {
 
     await fsExtra.mkdirp(installPath);
 
-    const detectedPar = detectPAR();
+    try {
+        const detectedPar = detectPAR();
 
-    const downloadedJarPath = await download(detectedPar, version, urlTemplate(detectedPar.platform, detectedPar.arch, version), temporaryDirPath);
+        const downloadedJarPath = await download(detectedPar, version, urlTemplate(detectedPar.platform, detectedPar.arch, version), temporaryDirPath);
 
-    const extractedTxzPath = await extractJar(detectedPar, version, downloadedJarPath, temporaryDirPath);
+        const extractedTxzPath = await extractJar(detectedPar, version, downloadedJarPath, temporaryDirPath);
 
-    const extractedDirPath = await extractTxz(detectedPar, version, extractedTxzPath, installPath);
+        const extractedDirPath = await extractTxz(detectedPar, version, extractedTxzPath, installPath);
 
-    await fsExtra.writeJSON(path.join(installPath, 'par.json'), { ...detectedPar, version });
+        await fsExtra.writeJSON(path.join(installPath, 'par.json'), { ...detectedPar, version });
 
-    logger.info(`postgres installed on '${installPath}' with PAR: `, { ...detectedPar, version });
+        logger.info(`postgres installed on '${installPath}' with PAR: `, { ...detectedPar, version });
 
-    return extractedDirPath;
+        return extractedDirPath;
+    } catch (ex) {
+        await fsExtra.remove(installPath);
+        logger.error('installation aborted, removing installation path');
+        throw ex;
+    }
 }
 
-interface EmbeddedPostgresPAR {
-    platform: string,
-    arch: string,
-    release: string | null
+/**
+ * Uninstalls an installed embedded PostgreSQL.
+ * @param installPath Installation path. Defaults to `path.join(__dirname, '..', 'postgres')`
+ * @returns 
+ * @throws `Not installed`, if there is not an embedded PostgreSQL installed on the destination path.
+ */
+export async function uninstall(installPath: string = defaultInstallPath): Promise<void> {
+    if (!await checkInstallation(installPath)) throw new Error('Not installed');
+
+    return fsExtra.remove(installPath);
+}
+
+/**
+ * Check if there is an installed embedded PostgreSQL on the specified path.
+ * @param installPath Installation path. Defaults to `path.join(__dirname, '..', 'postgres')`
+ * @returns `true`, if there is an installtion on the specified path, otherwise `false`.
+ */
+export async function checkInstallation(installPath: string = defaultInstallPath): Promise<boolean> {
+    if (await fsExtra.pathExists(installPath)) {
+        const installedPAR = await fsExtra.readJSON(path.join(installPath, 'par.json'));
+        logger.info('installed postgres PAR: ', installedPAR);
+        return true;
+    }
+    return false;
 }
 
 function detectPAR(): EmbeddedPostgresPAR {

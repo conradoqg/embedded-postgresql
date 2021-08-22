@@ -1,8 +1,10 @@
-import { Logger } from 'tslog';
+import { Logger, TLogLevelName } from 'tslog';
+
+const minLevel = process.env.LOG_LEVEL || 'debug';
 
 function setupLogger(): Logger {
     return new Logger({
-        // minLevel: 'error'
+        minLevel: minLevel as TLogLevelName
     });
 }
 
