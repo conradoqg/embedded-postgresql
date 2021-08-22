@@ -1,4 +1,4 @@
-import { checkInstallation, install, uninstall } from './installer';
+import { checkInstallation, install, uninstall } from '../src/installer';
 import path from 'path';
 import os from 'os';
 import fsExtra from 'fs-extra';

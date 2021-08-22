@@ -1,6 +1,6 @@
 {
     "clearMocks": true,
-    "coverageDirectory": "coverage",
+    "coverageDirectory": "./docs/coverage",
     "collectCoverage": true,
     "moduleFileExtensions": [
         "js",
@@ -11,5 +11,8 @@
         "node"
     ],
     "testEnvironment": "node",
-    "preset": "ts-jest"
+    "preset": "ts-jest",
+    "testMatch": [
+        "**/test/*.spec.ts"
+    ]
 }

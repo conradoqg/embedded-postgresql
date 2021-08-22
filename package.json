@@ -49,12 +49,12 @@
     "build": "npm run build:ts && npm run build:doc",
     "build:ts": "rimraf dist && tsc",
     "build:doc": "rimraf docs/api && typedoc",
-    "test": "jest ./src --config jestconfig.json",
-    "lint:fix": "eslint ./src --fix",
-    "lint:check": "eslint ./src",
+    "test": "jest --config jestconfig.json",
+    "lint:fix": "eslint ./src ./test --fix",
+    "lint:check": "eslint ./src ./test",
     "husky:pre-commit": "npm run lint:check",
     "prepare": "is-ci || husky install",
     "prepublishOnly": "npm run build && npm run test",
-    "contribution:check": "npm lint:fix && npm prepublishOnly"
+    "contribution:check": "npm run lint:fix && npm run prepublishOnly"
   }
 }

@@ -1,5 +1,5 @@
-import EmbeddedPostgreSQL from './EmbeddedPostgreSQL';
-import { install } from './installer';
+import EmbeddedPostgreSQL from '../src/EmbeddedPostgreSQL';
+import { install } from '../src/installer';
 import path from 'path';
 import fsExtra from 'fs-extra';
 

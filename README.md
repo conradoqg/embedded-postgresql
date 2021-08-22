@@ -4,11 +4,11 @@
 
 ### Features
 
-- Start, stop and get status;
-- Initialize;
-- Update `postgresql.conf`;
-- [Documented](https://conradoqg.github.io/embedded-postgresql/);
-- [Tested](./src/);
+- 📦 Install and uninstall;
+- 🔄 Initialize, start, stop and get status;
+- ✍️ Update `postgresql.conf`;
+- 📘 [Documented](https://conradoqg.github.io/embedded-postgresql/);
+- 🧪 [Tested](https://conradoqg.github.io/embedded-postgresql/coverage/lcov-report/);
 
 ### Install
 
@@ -16,7 +16,7 @@
 npm install --save embedded-postgresql
 ```
 
-### Examples
+### Quick start
 
 Installing an embedded PostgreSQL:
 ```typescript
@@ -46,11 +46,7 @@ await embeddedPostgreSQL.start();
 await embeddedPostgreSQL.stop();
 ```
 
-For more examples check the [specs](./src) source-code.
-
-### Documentation
-
-[API Reference](https://conradoqg.github.io/embedded-postgresql/).
+For more examples check the [tests](./test).
 
 ### Contributing
 
