@@ -36,9 +36,9 @@ const embeddedPostgreSQL = new EmbeddedPostgreSQL(testDataPath);
 await embeddedPostgreSQL.initialize();
 
 await embeddedPostgreSQL.updateConfig({
-    listen_addresses: '\'127.0.0.1\'', // By default it's commented and a string 'localhost'
-    max_connections: 200,   // By default it's 100
-    superuser_reserved_connections: 4 // By default it's commented and a number 3
+    wal_level: 'minimal',
+    max_worker_processes: 1,
+    max_parallel_workers: 1
 });
 
 await embeddedPostgreSQL.start();
@@ -50,7 +50,7 @@ For more examples check the [specs](./src) source-code.
 
 ### Documentation
 
-[API Reference](./docs/index.html).
+[API Reference](https://rawgit.com/conradoqg/embedded-postgresql/master/docs/index.html).
 
 ### Contributing
 

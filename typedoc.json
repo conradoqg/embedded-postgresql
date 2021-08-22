@@ -2,6 +2,8 @@
     "entryPoints": [
         "./src/index.ts"
     ],
+    "out": "./docs/api",
     "excludePrivate": true,
-    "readme": "none"
+    "readme": "none",
+    "includeVersion": true
 }

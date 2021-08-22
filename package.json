@@ -48,7 +48,7 @@
   "scripts": {
     "build": "npm run build:ts && npm run build:doc",
     "build:ts": "rimraf dist && tsc",
-    "build:doc": "rimraf docs && typedoc",
+    "build:doc": "rimraf docs/api && typedoc",
     "test": "jest ./src --config jestconfig.json",
     "lint:fix": "eslint ./src --fix",
     "lint:check": "eslint ./src",
