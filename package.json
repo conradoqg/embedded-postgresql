@@ -54,6 +54,7 @@
     "lint:check": "eslint ./src",
     "husky:pre-commit": "npm run lint:check",
     "prepare": "is-ci || husky install",
-    "prepublishOnly": "npm run build && npm run test"
+    "prepublishOnly": "npm run build && npm run test",
+    "contribution:check": "npm lint:fix && npm prepublishOnly"
   }
 }

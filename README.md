@@ -50,8 +50,11 @@ For more examples check the [specs](./src) source-code.
 
 ### Documentation
 
-[API Reference](https://rawgit.com/conradoqg/embedded-postgresql/master/docs/index.html).
+[API Reference](https://conradoqg.github.io/embedded-postgresql/).
 
 ### Contributing
 
-### License
+Make sure that you:
+
+1. Added tests to your change;
+2. Ran `npm run contribution:check`;
