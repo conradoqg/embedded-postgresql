@@ -2,7 +2,7 @@
 
 ### Examples
 
-Check the [tests](./test).
+Check the [tests](https://github.com/conradoqg/embedded-postgresql/tree/master/test).
 
 ### API Reference
 
