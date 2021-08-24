@@ -2,6 +2,7 @@ import EmbeddedPostgreSQL from '../src/EmbeddedPostgreSQL';
 import { install } from '../src/installer';
 import path from 'path';
 import fsExtra from 'fs-extra';
+import pg from 'pg';
 
 const testInstallPath = path.join(__dirname, '..', 'postgresTestEmbeddedPostgreSQL');
 const testDataPath = path.join(__dirname, '..', 'dataTestEmbeddedPostgreSQL');
@@ -26,7 +27,7 @@ describe('EmbeddedPostgres', () => {
     test('is expected to not initialize, start, stop or status because is not installed', async () => {
         const embeddedPostgreSQL = getEmbeddedPostgresTestInstance();
 
-        expect(embeddedPostgreSQL.initialize()).rejects.toThrowError('Embedded Postgress in not installed');
+        expect(embeddedPostgreSQL.initialize(['-A', 'trust', '-U', 'postgres'])).rejects.toThrowError('Embedded Postgress in not installed');
         expect(embeddedPostgreSQL.start()).rejects.toThrowError('Embedded Postgress in not installed');
         expect(embeddedPostgreSQL.stop()).rejects.toThrowError('Embedded Postgress in not installed');
         expect(embeddedPostgreSQL.status()).rejects.toThrowError('Embedded Postgress in not installed');
@@ -43,13 +44,13 @@ describe('EmbeddedPostgres', () => {
 
     test('is expected to initialize', async () => {
         const embeddedPostgreSQL = getEmbeddedPostgresTestInstance();
-        await embeddedPostgreSQL.initialize();
+        await embeddedPostgreSQL.initialize(['-A', 'trust', '-U', 'postgres']);
         expect(await embeddedPostgreSQL.isInitialized()).toBeTruthy();
     }, 1000 * 60);
 
     test('is expected to not initialize if it is already initialized', async () => {
         const embeddedPostgreSQL = getEmbeddedPostgresTestInstance();
-        await expect(embeddedPostgreSQL.initialize()).rejects.toThrow('Already initialized');
+        await expect(embeddedPostgreSQL.initialize(['-A', 'trust', '-U', 'postgres'])).rejects.toThrow('Already initialized');
     }, 1000 * 60);
 
     test('is expected to start, get the correct status and stop', async () => {
@@ -57,6 +58,27 @@ describe('EmbeddedPostgres', () => {
         try {
             await embeddedPostgreSQL.start();
             expect(await embeddedPostgreSQL.status()).toBeTruthy();
+        } finally {
+            await embeddedPostgreSQL.stop();
+        }
+    });
+
+    test('is expected to work with a test connection', async () => {
+        const embeddedPostgreSQL = getEmbeddedPostgresTestInstance();
+        try {
+            await embeddedPostgreSQL.start();
+
+            const client = new pg.Client({
+                host: 'localhost',
+                port: 5432,
+                user: 'postgres',
+                database: 'postgres'
+            });
+            await client.connect();
+            const res = await client.query('SELECT $1::text as message', ['Hello world!']);
+            expect(res.rows[0].message).toEqual('Hello world!');
+            await client.end();
+
         } finally {
             await embeddedPostgreSQL.stop();
         }
@@ -149,4 +171,36 @@ describe('EmbeddedPostgres', () => {
         await embeddedPostgreSQL.delete();
         expect(await embeddedPostgreSQL.isInitialized()).toBeFalsy();
     });
+
+    test('is expected to create an instance with an username and password and work with a test connection', async () => {
+        const embeddedPostgreSQL = getEmbeddedPostgresTestInstance();
+
+        try {
+            const password = 'secretpassword';
+
+            await fsExtra.writeFile('./password.txt', password);
+
+            await embeddedPostgreSQL.initialize(['-U', 'postgres', '-A', 'md5', '--pwfile', './password.txt']);
+
+            await fsExtra.remove('./password.txt');
+
+            await embeddedPostgreSQL.start();
+
+            const client = new pg.Client({
+                host: 'localhost',
+                port: 5432,
+                user: 'postgres',
+                password: password,
+                database: 'postgres'
+            });
+            await client.connect();
+            const res = await client.query('SELECT $1::text as message', ['Hello world!']);
+
+            expect(res.rows[0].message).toEqual('Hello world!');
+
+            await client.end();
+        } finally {
+            await embeddedPostgreSQL.stop();
+        }
+    }, 1000 * 60);
 });

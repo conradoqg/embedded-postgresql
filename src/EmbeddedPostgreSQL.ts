@@ -85,13 +85,26 @@ export default class EmbeddedPostgreSQL {
     /**
      * Initializes the data path with a database cluster.
      * 
+     * Example:
+     * ```typescript
+     * // Initialize with trust and user 'postgres'.
+     * const embeddedPostgreSQL = new EmbeddedPostgreSQL();
+     * await embeddedPostgreSQL.initialize();
+     * 
+     * // Initialize with user 'postgres' and password from file 'password.txt'.
+     * const embeddedPostgreSQL = new EmbeddedPostgreSQL();
+     * await embeddedPostgreSQL.initialize(['-A', 'md5', '-U', 'postgres', '--pwfile', './password.txt']);
+     * ```
+     * 
      * Under the hood it calls postgres's [initdb](https://www.postgresql.org/docs/current/app-initdb.html).
+     * 
+     * @param optionalArgs Additional arguments passed to the initdb executable. Defaults to `['-A', 'trust', '-U', 'postgres']`.
      */
-    public async initialize(): Promise<void> {
+    public async initialize(optionalArgs: string[] = ['-A', 'trust', '-U', 'postgres']): Promise<void> {
         if (!await this.isInstalled()) throw new Error('Embedded Postgress in not installed');
         if (await this.isInitialized()) throw new Error('Already initialized');
-
-        const args = ['-A', 'trust', '-U', 'postgres', '-D', this.dataPath, '-E', 'UTF-8'];
+        //'-A', 'trust', '-U', 'postgres',
+        const args = ['-D', this.dataPath, ...optionalArgs];
         logger.info(`initing postgres using '${this.dataPath}' for data`);
         logger.debug(`calling '${this.initDBPath} ${args.join(' ')}'`);
         child_process.spawnSync(this.initDBPath, args, { shell: false });
@@ -175,6 +188,7 @@ export default class EmbeddedPostgreSQL {
                             'DEBUG2': childLogger.debug,
                             'DEBUG1': childLogger.debug,
                             'NOTICE': childLogger.info,
+                            'DETAIL': childLogger.info,
                             'WARNING': childLogger.warn,
                             'ERROR': childLogger.error,
                             'LOG': childLogger.info,
@@ -182,7 +196,8 @@ export default class EmbeddedPostgreSQL {
                             'PANIC': childLogger.fatal
                         };
 
-                        logLevelMaps[log.logLevel].apply(childLogger, [log.message]);
+                        if (logLevelMaps[log.logLevel]) logLevelMaps[log.logLevel].apply(childLogger, [log.message]);
+                        else childLogger.info(log.message);
                     }
                 } catch (ex) {
                     logger.error(ex);

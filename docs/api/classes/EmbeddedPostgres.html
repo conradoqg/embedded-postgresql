@@ -125,7 +125,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/719c3e7/src/EmbeddedPostgreSQL.ts#L61">EmbeddedPostgreSQL.ts:61</a></li>
+									<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/b7350de/src/EmbeddedPostgreSQL.ts#L61">EmbeddedPostgreSQL.ts:61</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -157,7 +157,7 @@
 					<div class="tsd-signature tsd-kind-icon">data<wbr>Path<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/719c3e7/src/EmbeddedPostgreSQL.ts#L39">EmbeddedPostgreSQL.ts:39</a></li>
+							<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/b7350de/src/EmbeddedPostgreSQL.ts#L39">EmbeddedPostgreSQL.ts:39</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -172,7 +172,7 @@
 					<div class="tsd-signature tsd-kind-icon">process<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">ChildProcessWithoutNullStreams</span><span class="tsd-signature-symbol"> = null</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/719c3e7/src/EmbeddedPostgreSQL.ts#L43">EmbeddedPostgreSQL.ts:43</a></li>
+							<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/b7350de/src/EmbeddedPostgreSQL.ts#L43">EmbeddedPostgreSQL.ts:43</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -194,7 +194,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/719c3e7/src/EmbeddedPostgreSQL.ts#L103">EmbeddedPostgreSQL.ts:103</a></li>
+									<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/b7350de/src/EmbeddedPostgreSQL.ts#L116">EmbeddedPostgreSQL.ts:116</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -210,21 +210,39 @@
 					<a name="initialize" class="tsd-anchor"></a>
 					<h3>initialize</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">initialize<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">initialize<span class="tsd-signature-symbol">(</span>optionalArgs<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/719c3e7/src/EmbeddedPostgreSQL.ts#L90">EmbeddedPostgreSQL.ts:90</a></li>
+									<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/b7350de/src/EmbeddedPostgreSQL.ts#L103">EmbeddedPostgreSQL.ts:103</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
 									<p>Initializes the data path with a database cluster.</p>
 								</div>
+								<p>Example:</p>
+								<pre><code class="language-typescript"><span style="color: #008000">// Initialize with trust and user &#039;postgres&#039;.</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">embeddedPostgreSQL</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">EmbeddedPostgreSQL</span><span style="color: #000000">();</span>
+<span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">embeddedPostgreSQL</span><span style="color: #000000">.</span><span style="color: #795E26">initialize</span><span style="color: #000000">();</span>
+
+<span style="color: #008000">// Initialize with user &#039;postgres&#039; and password from file &#039;password.txt&#039;.</span>
+<span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">embeddedPostgreSQL</span><span style="color: #000000"> = </span><span style="color: #0000FF">new</span><span style="color: #000000"> </span><span style="color: #795E26">EmbeddedPostgreSQL</span><span style="color: #000000">();</span>
+<span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">embeddedPostgreSQL</span><span style="color: #000000">.</span><span style="color: #795E26">initialize</span><span style="color: #000000">([</span><span style="color: #A31515">&#039;-A&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;md5&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;-U&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;postgres&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;--pwfile&#039;</span><span style="color: #000000">, </span><span style="color: #A31515">&#039;./password.txt&#039;</span><span style="color: #000000">]);</span>
+</code></pre>
 								<p>Under the hood it calls postgres&#39;s <a href="https://www.postgresql.org/docs/current/app-initdb.html">initdb</a>.</p>
 							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>optionalArgs: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = ...</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Additional arguments passed to the initdb executable. Defaults to <code>[&#39;-A&#39;, &#39;trust&#39;, &#39;-U&#39;, &#39;postgres&#39;]</code>.</p>
+									</div>
+								</li>
+							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
@@ -239,7 +257,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/719c3e7/src/EmbeddedPostgreSQL.ts#L81">EmbeddedPostgreSQL.ts:81</a></li>
+									<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/b7350de/src/EmbeddedPostgreSQL.ts#L81">EmbeddedPostgreSQL.ts:81</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -262,7 +280,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/719c3e7/src/EmbeddedPostgreSQL.ts#L73">EmbeddedPostgreSQL.ts:73</a></li>
+									<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/b7350de/src/EmbeddedPostgreSQL.ts#L73">EmbeddedPostgreSQL.ts:73</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -285,7 +303,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/719c3e7/src/EmbeddedPostgreSQL.ts#L116">EmbeddedPostgreSQL.ts:116</a></li>
+									<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/b7350de/src/EmbeddedPostgreSQL.ts#L129">EmbeddedPostgreSQL.ts:129</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -317,7 +335,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/719c3e7/src/EmbeddedPostgreSQL.ts#L226">EmbeddedPostgreSQL.ts:226</a></li>
+									<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/b7350de/src/EmbeddedPostgreSQL.ts#L241">EmbeddedPostgreSQL.ts:241</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -341,7 +359,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/719c3e7/src/EmbeddedPostgreSQL.ts#L202">EmbeddedPostgreSQL.ts:202</a></li>
+									<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/b7350de/src/EmbeddedPostgreSQL.ts#L217">EmbeddedPostgreSQL.ts:217</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -364,7 +382,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/719c3e7/src/EmbeddedPostgreSQL.ts#L241">EmbeddedPostgreSQL.ts:241</a></li>
+									<li>Defined in <a href="https://github.com/conradoqg/embedded-postgresql/blob/b7350de/src/EmbeddedPostgreSQL.ts#L256">EmbeddedPostgreSQL.ts:256</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">

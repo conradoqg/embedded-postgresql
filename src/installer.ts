@@ -29,7 +29,7 @@ interface EmbeddedPostgresPAR {
 /**
  * Installs an embedded PostgreSQL on the destination path.
  * 
- * The installer utilizes binaries distributed by the [embedded-postgress-binaries](https://github.com/zonkyio/embedded-postgres-binaries) project and the available versions, platforms and archs can be see in this [list](https://mvnrepository.com/artifact/io.zonky.test.postgres).
+ * The installer utilizes binaries distributed by the [embedded-postgres-binaries](https://github.com/zonkyio/embedded-postgres-binaries) project and the available versions, platforms and archs can be see in this [list](https://mvnrepository.com/artifact/io.zonky.test.postgres).
  * 
  * @param version PostgreSQL version.
  * @param installPath Installation path. Defaults to `path.join(__dirname, '..', 'postgres')`

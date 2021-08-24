@@ -9,7 +9,7 @@
 - ✍️ Update `postgresql.conf`;
 - 📘 [Documented](https://conradoqg.github.io/embedded-postgresql/);
 - 🧪 [Tested](https://conradoqg.github.io/embedded-postgresql/coverage/lcov-report/);
-- 🖥️ Supports Linux, Windows and MacOS;
+- 🖥️ Supports Linux, Windows and MacOS (thanks to [embedded-postgres-binaries](https://github.com/zonkyio/embedded-postgres-binaries));
 
 ### Install
 
@@ -24,19 +24,21 @@ Installing an embedded PostgreSQL:
 import { checkInstallation, install, uninstall } from 'embedded-postgresql';
 
 async function main() {
-    await install('13.2.0');
+    if (!await checkInstallation())
+        await install('13.2.0');
 }
 main();
 ```
 
-Update config, start and stop the embedded PostgreSQL:
+Creating an instance with user `postgres`, update its configuration, start and stop:
 ```typescript
 import EmbeddedPostgreSQL from 'embedded-postgresql';
 
 async function main() {
     const embeddedPostgreSQL = new EmbeddedPostgreSQL(testDataPath);
 
-    await embeddedPostgreSQL.initialize();
+    if (!await embeddedPostgreSQL.isInitialized())
+        await embeddedPostgreSQL.initialize();
 
     await embeddedPostgreSQL.updateConfig({
         wal_level: 'minimal',
@@ -51,11 +53,44 @@ async function main() {
 main();
 ```
 
+Creating an instance with user `postgres`, password from a file, and connect to it using [`node-postgres`](https://node-postgres.com/):
+```typescript
+import EmbeddedPostgreSQL from 'embedded-postgresql';
+import pg from 'pg'; // install it with npm install pg
+
+async function main() {
+    const password = 'secretpassword';
+
+    await fsExtra.writeFile('./password.txt', password);
+    
+    if (!await embeddedPostgreSQL.isInitialized())
+        await embeddedPostgreSQL.initialize(['-U', 'postgres', '-A', 'md5', '--pwfile', './password.txt']);
+
+    await fsExtra.remove('./password.txt');
+
+    await embeddedPostgreSQL.start();
+
+    const client = new pg.Client({
+        host: 'localhost',
+        port: 5432,
+        user: 'postgres',
+        password: password,
+        database: 'postgres'
+    });
+
+    await client.connect();
+    const res = await client.query('SELECT $1::text as message', ['Hello world!']);
+    
+    await client.end();
+}
+main();
+```
+
 For more examples check the [tests](./test).
 
 ### Contributing
 
 Make sure that you:
 
-1. Added tests to your change;
-2. Ran `npm run contribution:check`;
+1. Created tests for your changes;
+2. Run `npm run contribution:check` and all tasks passed;
