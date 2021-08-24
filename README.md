@@ -1,6 +1,6 @@
 ## (WIP) embedded-postgresql
 
-> A npm package that helps installing and managing a standalone PostgreSQL.
+> A npm package that helps installing and managing an embedded PostgreSQL.
 
 ### Features
 
@@ -9,6 +9,7 @@
 - ✍️ Update `postgresql.conf`;
 - 📘 [Documented](https://conradoqg.github.io/embedded-postgresql/);
 - 🧪 [Tested](https://conradoqg.github.io/embedded-postgresql/coverage/lcov-report/);
+- 🖥️ Supports Linux, Windows and MacOS;
 
 ### Install
 
@@ -25,25 +26,29 @@ import { checkInstallation, install, uninstall } from 'embedded-postgresql';
 async function main() {
     await install('13.2.0');
 }
+main();
 ```
 
 Update config, start and stop the embedded PostgreSQL:
 ```typescript
 import EmbeddedPostgreSQL from 'embedded-postgresql';
 
-const embeddedPostgreSQL = new EmbeddedPostgreSQL(testDataPath);
+async function main() {
+    const embeddedPostgreSQL = new EmbeddedPostgreSQL(testDataPath);
 
-await embeddedPostgreSQL.initialize();
+    await embeddedPostgreSQL.initialize();
 
-await embeddedPostgreSQL.updateConfig({
-    wal_level: 'minimal',
-    max_worker_processes: 1,
-    max_parallel_workers: 1
-});
+    await embeddedPostgreSQL.updateConfig({
+        wal_level: 'minimal',
+        max_worker_processes: 1,
+        max_parallel_workers: 1
+    });
 
-await embeddedPostgreSQL.start();
+    await embeddedPostgreSQL.start();
 
-await embeddedPostgreSQL.stop();
+    await embeddedPostgreSQL.stop();
+}
+main();
 ```
 
 For more examples check the [tests](./test).
