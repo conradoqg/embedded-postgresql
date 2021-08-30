@@ -52,6 +52,7 @@
     "build:ts": "rimraf dist && tsc",
     "build:doc": "rimraf docs/api && typedoc",
     "test": "jest --config jestconfig.json",
+    "test:dev": "cross-env NODE_ENV=development jest --config jestconfig.json",
     "lint:fix": "eslint ./src ./test --fix",
     "lint:check": "eslint ./src ./test",
     "husky:pre-commit": "npm run lint:check",

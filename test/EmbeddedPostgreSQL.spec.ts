@@ -1,3 +1,4 @@
+import logger from '../src/logger';
 import EmbeddedPostgreSQL from '../src/EmbeddedPostgreSQL';
 import { install } from '../src/installer';
 import path from 'path';
@@ -6,6 +7,13 @@ import pg from 'pg';
 
 const testInstallPath = path.join(__dirname, '..', 'postgresTestEmbeddedPostgreSQL');
 const testDataPath = path.join(__dirname, '..', 'dataTestEmbeddedPostgreSQL');
+
+if (process.env.NODE_ENV == 'development') {
+    logger.setSettings({
+        minLevel: 'debug',
+        suppressStdOutput: false
+    });
+}
 
 function getEmbeddedPostgresTestInstance(): EmbeddedPostgreSQL {
     const embeddedPostgreSQL = new EmbeddedPostgreSQL(testDataPath);

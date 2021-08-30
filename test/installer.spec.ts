@@ -1,9 +1,17 @@
+import logger from '../src/logger';
 import { checkInstallation, install, uninstall } from '../src/installer';
 import path from 'path';
 import os from 'os';
 import fsExtra from 'fs-extra';
 
 const testInstallPath = path.join(__dirname, '..', 'postgresTestInstaller');
+
+if (process.env.NODE_ENV == 'development') {
+    logger.setSettings({
+        minLevel: 'debug',
+        suppressStdOutput: false
+    });
+}
 
 describe('installer', () => {
     beforeAll(async () => {

@@ -32,7 +32,7 @@ main();
 
 Creating an instance with user `postgres`, update its configuration, start and stop:
 ```typescript
-import EmbeddedPostgreSQL from 'embedded-postgresql';
+import { EmbeddedPostgreSQL } from 'embedded-postgresql';
 
 async function main() {
     const embeddedPostgreSQL = new EmbeddedPostgreSQL(testDataPath);
@@ -55,7 +55,7 @@ main();
 
 Creating an instance with user `postgres`, password from a file, and connect to it using [`node-postgres`](https://node-postgres.com/):
 ```typescript
-import EmbeddedPostgreSQL from 'embedded-postgresql';
+import { EmbeddedPostgreSQL } from 'embedded-postgresql';
 import pg from 'pg'; // install it with npm install pg
 
 async function main() {
@@ -82,6 +82,27 @@ async function main() {
     const res = await client.query('SELECT $1::text as message', ['Hello world!']);
     
     await client.end();
+}
+main();
+```
+
+Enabling log:
+```typescript
+import { EmbeddedPostgreSQL, logger } from 'embedded-postgresql';
+
+if (process.env.NODE_ENV == 'development') {
+    logger.setSettings({
+        minLevel: 'debug',
+        suppressStdOutput: false
+    });
+}
+
+async function main() {
+    const embeddedPostgreSQL = new EmbeddedPostgreSQL(testDataPath);
+
+    await embeddedPostgreSQL.start();
+
+    await embeddedPostgreSQL.stop();
 }
 main();
 ```
