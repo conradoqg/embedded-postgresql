@@ -2,18 +2,17 @@ import temp from 'temp';
 import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';
-import unzipper from 'unzipper';
-import decompress from 'decompress';
 import os from 'os';
 import fsExtra from 'fs-extra';
-import decompressTarxz from 'decompress-tarxz';
 import logger from './logger';
+import { createReadStream } from 'fs';
+import { createGunzip } from 'zlib';
+import { extract } from 'tar';
 
 temp.track();
 
-const urlTemplate = (platform: string, arch: string, version: string): string => `https://repo1.maven.org/maven2/io/zonky/test/postgres/embedded-postgres-binaries-${platform}-${arch}/${version}/embedded-postgres-binaries-${platform}-${arch}-${version}.jar`;
-const jarFileTemplate = (platform: string, arch: string, version: string): string => `embedded-postgres-binaries-${platform}-${arch}-${version}.jar`;
-const txzFileTemplate = (platform: string, arch: string, version: string): string => `embedded-postgres-binaries-${platform}-${arch}-${version}.txz`;
+const urlTemplate = (platform: string, arch: string, release: string | null, version: string): string => `https://github.com/theseus-rs/postgresql-binaries/releases/download/${version}/postgresql-${version}-${arch}-${platform}${release && '-'}${release ?? ''}.tar.gz`;
+const tarGzFileTemplate = (platform: string, arch: string, version: string): string => `embedded-postgres-binaries-${platform}-${arch}-${version}.tar.gz`;
 
 /**
  * The default path installation.
@@ -29,7 +28,7 @@ interface EmbeddedPostgresPAR {
 /**
  * Installs an embedded PostgreSQL on the destination path.
  * 
- * The installer utilizes binaries distributed by the [embedded-postgres-binaries](https://github.com/zonkyio/embedded-postgres-binaries) project and the available versions, platforms and archs can be see in this [list](https://mvnrepository.com/artifact/io.zonky.test.postgres).
+ * The installer utilizes binaries distributed by the [postgresql-binaries](https://github.com/theseus-rs/postgresql-binaries) project and the available versions, platforms and archs can be see in this [list](https://github.com/theseus-rs/postgresql-binaries/releases).
  * 
  * @param version PostgreSQL version.
  * @param installPath Installation path. Defaults to `path.join(__dirname, '..', 'postgres')`
@@ -49,11 +48,9 @@ export async function install(version: string, installPath: string = defaultInst
     try {
         const detectedPar = detectPAR();
 
-        const downloadedJarPath = await download(detectedPar, version, urlTemplate(detectedPar.platform, detectedPar.arch, version), temporaryDirPath);
+        const downloadedTarGzPath = await download(detectedPar, version, urlTemplate(detectedPar.platform, detectedPar.arch, detectedPar.release, version), temporaryDirPath);
 
-        const extractedTxzPath = await extractJar(detectedPar, version, downloadedJarPath, temporaryDirPath);
-
-        const extractedDirPath = await extractTxz(detectedPar, version, extractedTxzPath, installPath);
+        const extractedDirPath = await extractTgz(detectedPar, version, downloadedTarGzPath, installPath);
 
         await fsExtra.writeJSON(path.join(installPath, 'par.json'), { ...detectedPar, version });
 
@@ -95,40 +92,50 @@ export async function checkInstallation(installPath: string = defaultInstallPath
 
 function detectPAR(): EmbeddedPostgresPAR {
 
-    const availablePARs: EmbeddedPostgresPAR[] = [
-        { platform: 'linux', arch: 'amd64', release: null, },
-        { platform: 'linux', arch: 'amd64', release: 'alpine' },
-        { platform: 'linux', arch: 'ppc64le', release: 'alpine-lite' },
-        { platform: 'linux', arch: 'arm64v8', release: null },
-        { platform: 'linux', arch: 'arm64v8', release: 'alpine' },
-        { platform: 'linux', arch: 'ppc64le', release: null },
-        { platform: 'linux', arch: 'arm64v8', release: 'alpine-lite' },
-        { platform: 'linux', arch: 'arm32v6', release: null },
-        { platform: 'linux', arch: 'i386', release: null },
-        { platform: 'linux', arch: 'ppc64le', release: 'alpine' },
-        { platform: 'linux', arch: 'i386', release: 'alpine-lite' },
-        { platform: 'linux', arch: 'i386', release: 'alpine' },
-        { platform: 'linux', arch: 'arm32v6', release: 'alpine' },
-        { platform: 'linux', arch: 'arm32v6', release: 'alpine-lite' },
-        { platform: 'linux', arch: 'arm32v7', release: null },
-        { platform: 'linux', arch: 'amd64', release: 'alpine-lite' },
-        { platform: 'windows', arch: 'i386', release: null },
-        { platform: 'windows', arch: 'amd64', release: null },
-        { platform: 'darwin', arch: 'amd64', release: null }
+    const availablePARs = [
+        { arch: 'aarch64', platform: 'apple-darwin', release: null },
+        { arch: 'aarch64', platform: 'unknown-linux', release: 'gnu' },
+        { arch: 'aarch64', platform: 'unknown-linux', release: 'musl' },
+        { arch: 'arm', platform: 'unknown-linux', release: 'gnueabi' },
+        { arch: 'arm', platform: 'unknown-linux', release: 'gnueabihf' },
+        { arch: 'arm', platform: 'unknown-linux', release: 'musleabi' },
+        { arch: 'arm', platform: 'unknown-linux', release: 'musleabihf' },
+        { arch: 'armv5te', platform: 'unknown-linux', release: 'gnueabi' },
+        { arch: 'armv7', platform: 'unknown-linux', release: 'gnueabihf' },
+        { arch: 'armv7', platform: 'unknown-linux', release: 'musleabihf' },
+        { arch: 'i586', platform: 'unknown-linux', release: 'gnu' },
+        { arch: 'i586', platform: 'unknown-linux', release: 'musl' },
+        { arch: 'i686', platform: 'unknown-linux', release: 'gnu' },
+        { arch: 'i686', platform: 'unknown-linux', release: 'musl' },
+        { arch: 'mips64', platform: 'unknown-linux', release: 'gnuabi64' },
+        { arch: 'powerpc64le', platform: 'unknown-linux', release: 'gnu' },
+        { arch: 'powerpc64le', platform: 'unknown-linux', release: 'musl' },
+        { arch: 's390x', platform: 'unknown-linux', release: 'gnu' },
+        { arch: 's390x', platform: 'unknown-linux', release: 'musl' },
+        { arch: 'x86_64', platform: 'apple-darwin', release: null },
+        { arch: 'x86_64', platform: 'pc-windows', release: 'msvc' },
+        { arch: 'x86_64', platform: 'unknown-linux', release: 'gnu' },
+        { arch: 'x86_64', platform: 'unknown-linux', release: 'musl' },
+
     ];
 
     const nodeXEmbeddedPostgresPlatformMap = [
-        { node: 'darwin', embeddedPostgres: 'darwin' },
-        { node: 'linux', embeddedPostgres: 'linux' },
-        { node: 'win32', embeddedPostgres: 'windows' }
+        { node: 'darwin', embeddedPostgres: 'apple-darwin' },
+        { node: 'linux', embeddedPostgres: 'unknown-linux' },
+        { node: 'win32', embeddedPostgres: 'pc-windows' }
     ];
 
     const nodeXEmbeddedPostgresArchMap = [
-        { node: 'arm', embeddedPostgres: 'arm32v6' },
-        { node: 'arm64', embeddedPostgres: 'arm64v8' },
-        { node: 'ppc64', embeddedPostgres: 'ppc64le' },
-        { node: 'x32', embeddedPostgres: 'i386' },
-        { node: 'x64', embeddedPostgres: 'amd64' }
+        { node: 'aarch64', embeddedPostgres: 'aarch64' },
+        { node: 'arm', embeddedPostgres: 'arm' },
+        { node: 'armv5te', embeddedPostgres: 'armv5te' },
+        { node: 'armv7', embeddedPostgres: 'armv7' },
+        { node: 'i586', embeddedPostgres: 'i586' },
+        { node: 'i686', embeddedPostgres: 'i686' },
+        { node: 'mips64', embeddedPostgres: 'mips64' },
+        { node: 'powerpc64le', embeddedPostgres: 'powerpc64le' },
+        { node: 's390x', embeddedPostgres: 's390x' },
+        { node: 'x64', embeddedPostgres: 'x86_64' }
     ];
 
 
@@ -150,7 +157,7 @@ function detectPAR(): EmbeddedPostgresPAR {
         release: null
     };
 
-    const foundAvailablePar = availablePARs.find(item => item.platform == candidatePAR.plaform && item.arch == candidatePAR.arch && item.release == candidatePAR.release);
+    const foundAvailablePar = availablePARs.find(item => item.platform == candidatePAR.plaform && item.arch == candidatePAR.arch);
 
     if (!foundAvailablePar) throw new Error(`There is not an embedded-postgres-binaries avaliable for the combination of the '${candidatePAR.plaform}' platform, '${candidatePAR.arch}' arch, and '${candidatePAR.release}' release`);
 
@@ -160,7 +167,7 @@ function detectPAR(): EmbeddedPostgresPAR {
 }
 
 async function download(par: EmbeddedPostgresPAR, version: string, downloadURL: string, destinationPath: string): Promise<string> {
-    const temporaryFile = path.join(destinationPath, jarFileTemplate(par.platform, par.arch, version));
+    const temporaryFile = path.join(destinationPath, tarGzFileTemplate(par.platform, par.arch, version));
 
     logger.debug(`downloading portable postgres from '${downloadURL}' to '${temporaryFile}'`);
     const fetchResult = await fetch(downloadURL);
@@ -177,34 +184,14 @@ async function download(par: EmbeddedPostgresPAR, version: string, downloadURL: 
     });
 }
 
-async function extractJar(par: EmbeddedPostgresPAR, version: string, jarPath: string, destinationPath: string): Promise<string> {
-    const temporaryFile = path.join(destinationPath, txzFileTemplate(par.platform, par.arch, version));
+async function extractTgz(par: EmbeddedPostgresPAR, version: string, tgzPath: string, destinationPath: string): Promise<string> {
+    logger.debug(`extracting TGZ contents from '${tgzPath}' to '${destinationPath}'`);
 
-    logger.debug(`extracting JAR contents from '${jarPath}' to '${temporaryFile}'`);
-
-    return new Promise<string>((resolve, reject) => {
-        const destWriter = fs.createWriteStream(temporaryFile);
-        destWriter.on('close', () => {
-            resolve(temporaryFile);
-        });
-        destWriter.on('error', (error) => {
-            reject(error);
-        });
-        fs.createReadStream(jarPath)
-            .pipe(unzipper.ParseOne(/postgres.*/i))
-            .pipe(destWriter);
+    return new Promise((resolve, reject) => {
+        createReadStream(tgzPath)
+            .pipe(createGunzip())
+            .pipe(extract({ cwd: destinationPath, strip: 1 }))
+            .on('finish', () => resolve(destinationPath))
+            .on('error', reject);
     });
-}
-
-async function extractTxz(par: EmbeddedPostgresPAR, version: string, txzPath: string, destinationPath: string): Promise<string> {
-
-    logger.debug(`extracting TXZ contents from '${txzPath}' to '${destinationPath}'`);
-
-    await decompress(txzPath, destinationPath, {
-        plugins: [
-            decompressTarxz()
-        ]
-    });
-
-    return destinationPath;
 }

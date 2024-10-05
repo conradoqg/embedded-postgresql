@@ -2,6 +2,7 @@
     "clearMocks": true,
     "coverageDirectory": "./docs/coverage",
     "collectCoverage": true,
+    "maxWorkers": 1,
     "moduleFileExtensions": [
         "js",
         "json",

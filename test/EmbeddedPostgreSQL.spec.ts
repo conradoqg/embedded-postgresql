@@ -42,7 +42,7 @@ describe('EmbeddedPostgres', () => {
     });
 
     test('install for the rest of tests', async () => {
-        await install('13.2.0', testInstallPath);
+        await install('13.2.3', testInstallPath);
     }, 1000 * 60 * 3);
 
     test('is expected to throw if it tries to delete a not initialized instance', async () => {

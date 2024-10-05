@@ -9,7 +9,7 @@
 - ✍️ Update `postgresql.conf`;
 - 📘 [Documented](https://conradoqg.github.io/embedded-postgresql/);
 - 🧪 [Tested](https://conradoqg.github.io/embedded-postgresql/coverage/lcov-report/);
-- 🖥️ Supports Linux, Windows and MacOS (thanks to [embedded-postgres-binaries](https://github.com/zonkyio/embedded-postgres-binaries));
+- 🖥️ Supports Linux, Windows and MacOS (thanks to [postgresql-binaries](https://github.com/theseus-rs/postgresql-binaries));
 
 ### Install
 
@@ -25,7 +25,7 @@ import { checkInstallation, install, uninstall } from 'embedded-postgresql';
 
 async function main() {
     if (!await checkInstallation())
-        await install('13.2.0');
+        await install('17.0.0');
 }
 main();
 ```
