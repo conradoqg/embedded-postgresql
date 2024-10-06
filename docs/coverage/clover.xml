@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1728171438987" clover="3.2.0">
-  <project timestamp="1728171438987" name="All files">
-    <metrics statements="157" coveredstatements="154" conditionals="66" coveredconditionals="56" methods="34" coveredmethods="33" elements="257" coveredelements="243" complexity="0" loc="157" ncloc="157" packages="1" files="3" classes="3"/>
+<coverage generated="1728181168618" clover="3.2.0">
+  <project timestamp="1728181168618" name="All files">
+    <metrics statements="157" coveredstatements="154" conditionals="67" coveredconditionals="57" methods="34" coveredmethods="33" elements="258" coveredelements="244" complexity="0" loc="157" ncloc="157" packages="1" files="3" classes="3"/>
     <file name="EmbeddedPostgreSQL.ts" path="C:\FAData\Desenvolvimento\Proprio\embedded-postgres\src\EmbeddedPostgreSQL.ts">
-      <metrics statements="88" coveredstatements="86" conditionals="43" coveredconditionals="37" methods="17" coveredmethods="17"/>
+      <metrics statements="88" coveredstatements="86" conditionals="44" coveredconditionals="38" methods="17" coveredmethods="17"/>
       <line num="2" count="1" type="stmt"/>
       <line num="3" count="1" type="stmt"/>
       <line num="4" count="1" type="stmt"/>

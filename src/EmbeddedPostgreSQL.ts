@@ -58,9 +58,9 @@ export default class EmbeddedPostgreSQL {
      * Creates an embedded PostgreSQL instance for a specific data path.
      * @param dataPath Data path.
      */
-    constructor(dataPath: string = path.join(__dirname, '..', 'data')) {
+    constructor(dataPath: string = path.join(__dirname, '..', 'data'), installPath: string = defaultInstallPath) {
         this.dataPath = dataPath;
-        this.installPath = defaultInstallPath;
+        this.installPath = installPath;
         this.configPath = path.join(dataPath, 'postgresql.conf');
 
         logger.silly('instance config: ', this);
@@ -104,7 +104,7 @@ export default class EmbeddedPostgreSQL {
         if (!await this.isInstalled()) throw new Error('Embedded Postgress in not installed');
         if (await this.isInitialized()) throw new Error('Already initialized');
         //'-A', 'trust', '-U', 'postgres',
-        const args = ['-D', this.dataPath, ...optionalArgs];
+        const args = ['-D', this.dataPath, '--lc-messages', 'american_usa', ...optionalArgs];
         logger.info(`initing postgres using '${this.dataPath}' for data`);
         logger.debug(`calling '${this.initDBPath} ${args.join(' ')}'`);
         child_process.spawnSync(this.initDBPath, args, { shell: false });
