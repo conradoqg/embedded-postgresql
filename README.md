@@ -35,7 +35,7 @@ Creating an instance with user `postgres`, update its configuration, start and s
 import { EmbeddedPostgreSQL } from 'embedded-postgresql';
 
 async function main() {
-    const embeddedPostgreSQL = new EmbeddedPostgreSQL(testDataPath);
+    const embeddedPostgreSQL = new EmbeddedPostgreSQL();
 
     if (!await embeddedPostgreSQL.isInitialized())
         await embeddedPostgreSQL.initialize();
@@ -57,6 +57,7 @@ Creating an instance with user `postgres`, password from a file, and connect to 
 ```typescript
 import { EmbeddedPostgreSQL } from 'embedded-postgresql';
 import pg from 'pg'; // install it with npm install pg
+import fsExtra from 'fs-extra'; // install it with npm install fs-extra
 
 async function main() {
     const password = 'secretpassword';
